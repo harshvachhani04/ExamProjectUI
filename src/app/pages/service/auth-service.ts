@@ -10,7 +10,6 @@ import { environment } from 'src/environment';
 export class AuthService {
 
   private readonly BASE_API_URL = environment.apiBaseUrl;
-
   private readonly AUTH_API = `${this.BASE_API_URL}/Auth`;
 
   isAuthenticated = signal<boolean>(this.hasToken());

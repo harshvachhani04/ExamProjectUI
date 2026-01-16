@@ -11,15 +11,28 @@ import { LayoutService } from '../service/layout.service';
 @Component({
     // eslint-disable-next-line @angular-eslint/component-selector
     selector: '[app-menuitem]',
+    standalone: true,
     imports: [CommonModule, RouterModule, RippleModule],
     template: `
         <ng-container>
-            <div *ngIf="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
-            <a *ngIf="(!item.routerLink || item.items) && item.visible !== false" [attr.href]="item.url" (click)="itemClick($event)" [ngClass]="item.styleClass" [attr.target]="item.target" tabindex="0" pRipple>
+            <div *ngIf="root && item.visible !== false" class="layout-menuitem-root-text">
+                {{ item.label }}
+            </div>
+
+            <a
+                *ngIf="(!item.routerLink || item.items) && item.visible !== false"
+                [attr.href]="item.url"
+                (click)="itemClick($event)"
+                [ngClass]="item.styleClass"
+                [attr.target]="item.target"
+                tabindex="0"
+                pRipple
+            >
                 <i [ngClass]="item.icon" class="layout-menuitem-icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
                 <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
+
             <a
                 *ngIf="item.routerLink && !item.items && item.visible !== false"
                 (click)="itemClick($event)"
@@ -40,60 +53,51 @@ import { LayoutService } from '../service/layout.service';
             >
                 <i [ngClass]="item.icon" class="layout-menuitem-icon"></i>
                 <span class="layout-menuitem-text">{{ item.label }}</span>
-                <i class="pi pi-fw pi-angle-down layout-submenu-toggler" *ngIf="item.items"></i>
             </a>
 
             <ul *ngIf="item.items && item.visible !== false" [@children]="submenuAnimation">
                 <ng-template ngFor let-child let-i="index" [ngForOf]="item.items">
-                    <li app-menuitem [item]="child" [index]="i" [parentKey]="key" [class]="child['badgeClass']"></li>
+                    <li
+                        app-menuitem
+                        [item]="child"
+                        [index]="i"
+                        [parentKey]="key"
+                        [class]="child['badgeClass']"
+                    ></li>
                 </ng-template>
             </ul>
         </ng-container>
     `,
     animations: [
         trigger('children', [
-            state(
-                'collapsed',
-                style({
-                    height: '0'
-                })
-            ),
-            state(
-                'expanded',
-                style({
-                    height: '*'
-                })
-            ),
+            state('collapsed', style({ height: '0' })),
+            state('expanded', style({ height: '*' })),
             transition('collapsed <=> expanded', animate('400ms cubic-bezier(0.86, 0, 0.07, 1)'))
         ])
-    ],
-    providers: [LayoutService]
+    ]
+    // ❌ REMOVED providers: [LayoutService]
 })
 export class AppMenuitem {
+
     @Input() item!: MenuItem;
-
     @Input() index!: number;
-
     @Input() @HostBinding('class.layout-root-menuitem') root!: boolean;
-
     @Input() parentKey!: string;
 
     active = false;
+    key: string = '';
 
     menuSourceSubscription: Subscription;
-
     menuResetSubscription: Subscription;
-
-    key: string = '';
 
     constructor(
         public router: Router,
         private layoutService: LayoutService
     ) {
-        this.menuSourceSubscription = this.layoutService.menuSource$.subscribe((value) => {
-            Promise.resolve(null).then(() => {
+        this.menuSourceSubscription = this.layoutService.menuSource$.subscribe(value => {
+            Promise.resolve().then(() => {
                 if (value.routeEvent) {
-                    this.active = value.key === this.key || value.key.startsWith(this.key + '-') ? true : false;
+                    this.active = value.key === this.key || value.key.startsWith(this.key + '-');
                 } else {
                     if (value.key !== this.key && !value.key.startsWith(this.key + '-')) {
                         this.active = false;
@@ -106,7 +110,7 @@ export class AppMenuitem {
             this.active = false;
         });
 
-        this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((params) => {
+        this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
             if (this.item.routerLink) {
                 this.updateActiveStateFromRoute();
             }
@@ -114,7 +118,7 @@ export class AppMenuitem {
     }
 
     ngOnInit() {
-        this.key = this.parentKey ? this.parentKey + '-' + this.index : String(this.index);
+        this.key = this.parentKey ? `${this.parentKey}-${this.index}` : String(this.index);
 
         if (this.item.routerLink) {
             this.updateActiveStateFromRoute();
@@ -122,7 +126,12 @@ export class AppMenuitem {
     }
 
     updateActiveStateFromRoute() {
-        let activeRoute = this.router.isActive(this.item.routerLink[0], { paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' });
+        const activeRoute = this.router.isActive(this.item.routerLink![0], {
+            paths: 'exact',
+            queryParams: 'ignored',
+            matrixParams: 'ignored',
+            fragment: 'ignored'
+        });
 
         if (activeRoute) {
             this.layoutService.onMenuStateChange({ key: this.key, routeEvent: true });
@@ -130,18 +139,15 @@ export class AppMenuitem {
     }
 
     itemClick(event: Event) {
-        // avoid processing disabled items
         if (this.item.disabled) {
             event.preventDefault();
             return;
         }
 
-        // execute command
         if (this.item.command) {
             this.item.command({ originalEvent: event, item: this.item });
         }
 
-        // toggle active state
         if (this.item.items) {
             this.active = !this.active;
         }
@@ -159,12 +165,7 @@ export class AppMenuitem {
     }
 
     ngOnDestroy() {
-        if (this.menuSourceSubscription) {
-            this.menuSourceSubscription.unsubscribe();
-        }
-
-        if (this.menuResetSubscription) {
-            this.menuResetSubscription.unsubscribe();
-        }
+        this.menuSourceSubscription?.unsubscribe();
+        this.menuResetSubscription?.unsubscribe();
     }
 }

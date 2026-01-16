@@ -1,5 +1,6 @@
 import { Injectable, effect, signal, computed } from '@angular/core';
 import { Subject } from 'rxjs';
+import { MenuItem } from 'primeng/api';   // ✅ ADD
 
 export interface layoutConfig {
     preset?: string;
@@ -26,6 +27,9 @@ interface MenuChangeEvent {
     providedIn: 'root'
 })
 export class LayoutService {
+
+    /* ================= EXISTING CODE ================= */
+
     _config: layoutConfig = {
         preset: 'Aura',
         primary: 'emerald',
@@ -43,40 +47,34 @@ export class LayoutService {
     };
 
     layoutConfig = signal<layoutConfig>(this._config);
-
     layoutState = signal<LayoutState>(this._state);
 
     private configUpdate = new Subject<layoutConfig>();
-
     private overlayOpen = new Subject<any>();
-
     private menuSource = new Subject<MenuChangeEvent>();
-
     private resetSource = new Subject();
 
     menuSource$ = this.menuSource.asObservable();
-
     resetSource$ = this.resetSource.asObservable();
-
     configUpdate$ = this.configUpdate.asObservable();
-
     overlayOpen$ = this.overlayOpen.asObservable();
 
     theme = computed(() => (this.layoutConfig()?.darkTheme ? 'light' : 'dark'));
-
     isSidebarActive = computed(() => this.layoutState().overlayMenuActive || this.layoutState().staticMenuMobileActive);
-
     isDarkTheme = computed(() => this.layoutConfig().darkTheme);
-
     getPrimary = computed(() => this.layoutConfig().primary);
-
     getSurface = computed(() => this.layoutConfig().surface);
-
     isOverlay = computed(() => this.layoutConfig().menuMode === 'overlay');
 
     transitionComplete = signal<boolean>(false);
-
     private initialized = false;
+
+    /* ================= ✅ ADD THIS (SAFE) ================= */
+
+    /** Dynamic menu holder (UI-safe extension) */
+    menu = signal<MenuItem[]>([]);
+
+    /* ================= EXISTING CODE ================= */
 
     constructor() {
         effect(() => {
@@ -88,12 +86,10 @@ export class LayoutService {
 
         effect(() => {
             const config = this.layoutConfig();
-
             if (!this.initialized || !config) {
                 this.initialized = true;
                 return;
             }
-
             this.handleDarkModeTransition(config);
         });
     }
@@ -112,11 +108,7 @@ export class LayoutService {
             this.toggleDarkMode(config);
         });
 
-        transition.ready
-            .then(() => {
-                this.onTransitionEnd();
-            })
-            .catch(() => {});
+        transition.ready.then(() => this.onTransitionEnd()).catch(() => {});
     }
 
     toggleDarkMode(config?: layoutConfig): void {
@@ -130,25 +122,21 @@ export class LayoutService {
 
     private onTransitionEnd() {
         this.transitionComplete.set(true);
-        setTimeout(() => {
-            this.transitionComplete.set(false);
-        });
+        setTimeout(() => this.transitionComplete.set(false));
     }
 
     onMenuToggle() {
         if (this.isOverlay()) {
-            this.layoutState.update((prev) => ({ ...prev, overlayMenuActive: !this.layoutState().overlayMenuActive }));
-
+            this.layoutState.update(prev => ({ ...prev, overlayMenuActive: !this.layoutState().overlayMenuActive }));
             if (this.layoutState().overlayMenuActive) {
                 this.overlayOpen.next(null);
             }
         }
 
         if (this.isDesktop()) {
-            this.layoutState.update((prev) => ({ ...prev, staticMenuDesktopInactive: !this.layoutState().staticMenuDesktopInactive }));
+            this.layoutState.update(prev => ({ ...prev, staticMenuDesktopInactive: !this.layoutState().staticMenuDesktopInactive }));
         } else {
-            this.layoutState.update((prev) => ({ ...prev, staticMenuMobileActive: !this.layoutState().staticMenuMobileActive }));
-
+            this.layoutState.update(prev => ({ ...prev, staticMenuMobileActive: !this.layoutState().staticMenuMobileActive }));
             if (this.layoutState().staticMenuMobileActive) {
                 this.overlayOpen.next(null);
             }
