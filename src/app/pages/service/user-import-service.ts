@@ -11,7 +11,7 @@ import { UserImportResult } from '@/models/interfaces/user-import.model';
 export class UserImportService {
 
   private readonly BASE_API_URL = environment.apiBaseUrl;
-  private readonly IMPORT_API = `${this.BASE_API_URL}/user/import`;
+  private readonly IMPORT_API = `${this.BASE_API_URL}/import/import`;
 
   constructor(
     private http: HttpClient,
