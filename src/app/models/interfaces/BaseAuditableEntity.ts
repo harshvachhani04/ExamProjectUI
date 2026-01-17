@@ -1,7 +1,7 @@
 export interface BaseAuditableEntity {
   createdDate?: Date;
-  createdBy?: string;
+  preparedBy?: string;
   lastModifiedDate?: Date;
-  lastModifiedBy?: string;
+  lastUpdatedBy?: string;
   isDeleted?: boolean;
 }

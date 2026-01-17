@@ -1,0 +1,103 @@
+<div class="card">
+  <div class="card-header">
+    <div class="header-content">
+      <h5 class="page-title">Users</h5>
+      
+      <div class="header-actions">
+        <!-- Search Input -->
+        <span class="p-input-icon-left">
+  <i class="pi pi-search"></i>
+  <input 
+    pInputText 
+    type="text" 
+    [(ngModel)]="search" 
+    placeholder="Search users..." 
+    (keyup.enter)="onSearch()"
+    class="search-input" />
+</span>
+
+        <!-- Column Selector -->
+        <p-multiSelect 
+          [options]="allColumns" 
+          [(ngModel)]="selectedColumns" 
+          optionLabel="header" 
+          placeholder="Select Columns" 
+          [maxSelectedLabels]="0"
+          selectedItemsLabel="{0} columns selected"
+          class="column-selector"
+          (onChange)="onColumnChange()">
+          <ng-template let-value pTemplate="selectedItems">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-table"></i>
+              <span>Columns</span>
+            </div>
+          </ng-template>
+        </p-multiSelect>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <p-table 
+      [value]="users" 
+      [lazy]="true" 
+      [paginator]="true" 
+      [rows]="pageSize" 
+      [totalRecords]="totalRecords" 
+      [loading]="loading" 
+      [rowsPerPageOptions]="[10,20,50]"
+      [tableStyle]="{'min-width': '100%'}"
+      styleClass="p-datatable-striped"
+      (onLazyLoad)="onLazyLoad($event)">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th *ngFor="let col of visibleColumns" 
+              [pSortableColumn]="col.sortable ? col.field : undefined"
+              class="table-header">
+            <div class="flex align-items-center gap-2">
+              {{ col.header }}
+              <p-sortIcon *ngIf="col.sortable" [field]="col.field"></p-sortIcon>
+            </div>
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td *ngFor="let col of visibleColumns" class="table-cell">
+            
+            <ng-container *ngIf="col.field === 'role'; else defaultCell">
+              <p-tag 
+                [value]="getRoleLabel(user.role)" 
+                [severity]="getRoleSeverity(user.role)"
+                [rounded]="true">
+              </p-tag>
+            </ng-container>
+
+            <ng-template #defaultCell>
+              <ng-container *ngIf="col.field.toLowerCase().includes('date')">
+                <span class="date-text">{{ user[col.field] | date:'dd MMM yyyy' }}</span>
+              </ng-container>
+              <ng-container *ngIf="!col.field.toLowerCase().includes('date')">
+                <span [class.text-muted]="!user[col.field]">
+                  {{ user[col.field] || '-' }}
+                </span>
+              </ng-container>
+            </ng-template>
+
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td [attr.colspan]="visibleColumns.length" class="text-center empty-message">
+            <i class="pi pi-inbox" style="font-size: 3rem; color: var(--text-color-secondary);"></i>
+            <p class="mt-3 mb-0">No users found</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

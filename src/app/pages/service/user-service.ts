@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environment';
 import { AuthService } from './auth-service';
 import { PagedRequest, PagedResponse } from '@/models/dto/PaginationDto';
-import { UserCreateDto, UserDto, UserUpdateDto } from '@/models/dto/UserDTO';
+import { UserCreateDto, UserDto, UserUpdateDto } from '@/models/dto/UserDto';
 
 @Injectable({
   providedIn: 'root',

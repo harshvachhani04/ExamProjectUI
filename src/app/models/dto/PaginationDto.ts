@@ -2,7 +2,7 @@ export interface PagedRequest {
   pageNumber?: number;
   pageSize?: number;
   sortBy?: string;
-  sortOrder?: string;
+  sortOrder?: 'asc' | 'desc';
   search?: string;
 }
 
