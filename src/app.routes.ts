@@ -8,7 +8,7 @@ import { Routes } from '@angular/router';
 
 export const appRoutes: Routes = [
     // 1. Root redirect (Only happens if the URL is exactly http://localhost:4200/)
-    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
 
     // 2. Auth routes (No Sidebar/Layout)
     { 

@@ -20,5 +20,11 @@ export default [
             import('./user-list/user-list')
                 .then(m => m.UserListComponent)
     },
+    {
+        path: 'import-user',
+        loadComponent: () =>
+            import('./import-user/import-user')
+                .then(m => m.ImportUserComponent)
+    },
     { path: '**', redirectTo: '/notfound' },
 ] as Routes;
